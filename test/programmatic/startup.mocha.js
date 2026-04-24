@@ -52,6 +52,10 @@ describe('Startup binary path resolution', function() {
     should(Startup.resolvePm2BinPath()).eql('/usr/local/bin/pm2');
   });
 
+  it('should expose the launchd startup template', function() {
+    should(Startup.getStartupTemplate('launchd')).match(/<key>LaunchOnlyOnce<\/key>/);
+  });
+
   it('should ignore the programmatic caller path', function() {
     delete process.pkg;
     require.main.filename = '/workdir/app.js';
