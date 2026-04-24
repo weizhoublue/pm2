@@ -28,7 +28,7 @@ printf '%s\n' "$header_line" | grep -Eq '[│|][[:space:]]*fail[[:space:]]*[│|
 spec "should display failure count column in list output"
 
 $pm2 jlist > /tmp/tmp_out.json
-node - <<'NODE'
+cat > /tmp/check_stats_1.js << 'NODE'
 const fs = require('fs')
 const list = JSON.parse(fs.readFileSync('/tmp/tmp_out.json', 'utf8'))
 
@@ -56,6 +56,7 @@ assert(fail.failure_count === 1, 'expected failure app failure_count=1')
 assert(fail.last_exit_code === 42, 'expected failure app last_exit_code=42')
 assert(typeof fail.last_exit_at === 'number', 'expected failure app last_exit_at')
 NODE
+"$node" /tmp/check_stats_1.js
 spec "should record runtime stats for exited apps"
 
 $pm2 save
@@ -66,7 +67,7 @@ $pm2 resurrect
 sleep 1
 
 $pm2 jlist > /tmp/tmp_out.json
-node - <<'NODE'
+cat > /tmp/check_stats_2.js << 'NODE'
 const fs = require('fs')
 const list = JSON.parse(fs.readFileSync('/tmp/tmp_out.json', 'utf8'))
 
@@ -94,13 +95,14 @@ assert(fail.failure_count === 1, 'expected failure app failure_count persisted')
 assert(fail.last_exit_code === 42, 'expected failure app last_exit_code persisted')
 assert(typeof fail.last_exit_at === 'number', 'expected failure app last_exit_at persisted')
 NODE
+"$node" /tmp/check_stats_2.js
 spec "should persist runtime stats across resurrect"
 
 $pm2 reset all
 spec "should reset runtime stats"
 
 $pm2 jlist > /tmp/tmp_out.json
-node - <<'NODE'
+cat > /tmp/check_stats_3.js << 'NODE'
 const fs = require('fs')
 const list = JSON.parse(fs.readFileSync('/tmp/tmp_out.json', 'utf8'))
 
@@ -123,6 +125,7 @@ for (const name of ['list-stats-ok', 'list-stats-fail']) {
   assert(app.last_exit_at === null, `expected ${name} last_exit_at reset`)
 }
 NODE
+"$node" /tmp/check_stats_3.js
 spec "should clear runtime stats on reset"
 
 $pm2 delete all
