@@ -21,8 +21,8 @@ node dist/bin/pm2 --version
 find -name "*~" -delete
 
 # fix chmod
-chmod 755 `find -name LICENSE`
-chmod a+x `find -name "*.sh"`
+find dist -name LICENSE -type f -exec chmod 755 {} +
+find dist -name "*.sh" -type f -exec chmod a+x {} +
 
 tar -cvzf dist/pm2-v`node dist/bin/pm2 --version`.tar.gz dist/*
 shasum -a 256 dist/pm2-*.tar.gz
