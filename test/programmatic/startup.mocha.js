@@ -5,7 +5,8 @@ var should = require('should');
 describe('Startup binary path resolution', function() {
   var originalExecPathDescriptor = Object.getOwnPropertyDescriptor(process, 'execPath');
   var originalPkg = process.pkg;
-  var originalMainFilename = require.main.filename;
+  var originalMain = require.main;
+  var originalMainFilename = require.main && require.main.filename;
 
   afterEach(function() {
     Object.defineProperty(process, 'execPath', originalExecPathDescriptor);
@@ -15,7 +16,9 @@ describe('Startup binary path resolution', function() {
     else
       process.pkg = originalPkg;
 
-    require.main.filename = originalMainFilename;
+    require.main = originalMain;
+    if (originalMain)
+      require.main.filename = originalMainFilename;
   });
 
   it('should use process.execPath for snapshot installs', function() {
@@ -52,6 +55,13 @@ describe('Startup binary path resolution', function() {
   it('should ignore the programmatic caller path', function() {
     delete process.pkg;
     require.main.filename = '/workdir/app.js';
+
+    should(Startup.resolvePm2BinPath()).eql(path.resolve(__dirname, '../../bin/pm2'));
+  });
+
+  it('should fall back gracefully when require.main is unavailable', function() {
+    delete process.pkg;
+    require.main = null;
 
     should(Startup.resolvePm2BinPath()).eql(path.resolve(__dirname, '../../bin/pm2'));
   });
