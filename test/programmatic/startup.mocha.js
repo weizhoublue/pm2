@@ -1,3 +1,4 @@
+var path = require('path');
 var Startup = require('../../lib/API/Startup');
 var should = require('should');
 
@@ -37,7 +38,7 @@ describe('Startup binary path resolution', function() {
     delete process.pkg;
     require.main.filename = '/workdir/lib/binaries/CLI.js';
 
-    should(Startup.resolvePm2BinPath()).eql('/workdir/bin/pm2');
+    should(Startup.resolvePm2BinPath()).eql(path.resolve(__dirname, '../../bin/pm2'));
   });
 
   it('should use process.execPath for pkg installs', function() {
@@ -50,5 +51,12 @@ describe('Startup binary path resolution', function() {
     require.main.filename = '/workdir/lib/binaries/CLI.js';
 
     should(Startup.resolvePm2BinPath()).eql('/usr/local/bin/pm2');
+  });
+
+  it('should ignore the programmatic caller path', function() {
+    delete process.pkg;
+    require.main.filename = '/workdir/app.js';
+
+    should(Startup.resolvePm2BinPath()).eql(path.resolve(__dirname, '../../bin/pm2'));
   });
 });
