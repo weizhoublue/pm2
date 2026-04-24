@@ -14,16 +14,17 @@ spec "should start failure fixture"
 sleep 2
 
 env -u PM2_SILENT $pm2 list > /tmp/tmp_out.txt
-grep -q "exit at" /tmp/tmp_out.txt
+header_line=$(grep -m1 "exit at" /tmp/tmp_out.txt)
+printf '%s\n' "$header_line" | grep -q "exit at"
 spec "should display exit time column in list output"
 
-grep -q "starts" /tmp/tmp_out.txt
+printf '%s\n' "$header_line" | grep -q "starts"
 spec "should display starts column in list output"
 
-grep -q "ok" /tmp/tmp_out.txt
+printf '%s\n' "$header_line" | grep -Eq '[│|][[:space:]]*ok[[:space:]]*[│|]'
 spec "should display success count column in list output"
 
-grep -q "fail" /tmp/tmp_out.txt
+printf '%s\n' "$header_line" | grep -Eq '[│|][[:space:]]*fail[[:space:]]*[│|]'
 spec "should display failure count column in list output"
 
 $pm2 jlist > /tmp/tmp_out.json
