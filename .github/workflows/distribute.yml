@@ -8,6 +8,9 @@ on:
         required: true
         default: 'v6.0.14-dist'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build and Release
