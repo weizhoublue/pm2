@@ -3,16 +3,12 @@ var Startup = require('../../lib/API/Startup');
 var should = require('should');
 
 describe('Startup binary path resolution', function() {
-  var originalExecPath = process.execPath;
+  var originalExecPathDescriptor = Object.getOwnPropertyDescriptor(process, 'execPath');
   var originalPkg = process.pkg;
   var originalMainFilename = require.main.filename;
 
   afterEach(function() {
-    Object.defineProperty(process, 'execPath', {
-      value: originalExecPath,
-      configurable: true,
-      writable: true
-    });
+    Object.defineProperty(process, 'execPath', originalExecPathDescriptor);
 
     if (typeof originalPkg === 'undefined')
       delete process.pkg;
