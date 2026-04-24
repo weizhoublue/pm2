@@ -21,6 +21,7 @@ runTest ./test/e2e/cli/binary.sh
 runTest ./test/e2e/cli/startOrX.sh
 runTest ./test/e2e/cli/reset.sh
 runTest ./test/e2e/cli/env-refresh.sh
+runTest ./test/e2e/cli/list-cron.sh
 
 runTest ./test/e2e/cli/extra-lang.sh
 runTest ./test/e2e/cli/python-support.sh
