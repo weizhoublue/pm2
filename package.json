@@ -5,6 +5,20 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "pkg": {
+    "assets": [
+      "lib/**/*",
+      "constants.js",
+      "paths.js",
+      "package.json",
+      "index.js"
+    ],
+    "targets": [
+      "node18-linux-x64",
+      "node18-macos-x64",
+      "node18-win-x64"
+    ]
+  },
   "directories": {
     "bin": "./bin",
     "lib": "./lib",

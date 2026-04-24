@@ -1,0 +1,57 @@
+name: Distribute PM2 Binaries
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag Name (e.g. v6.0.14-dist)'
+        required: true
+        default: 'v6.0.14-dist'
+
+jobs:
+  build:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Official Tarball
+        run: |
+          chmod +x packager/build-dist.sh
+          bash packager/build-dist.sh
+          # 移动生成的压缩包到根目录方便上传
+          mv dist/pm2-v*.tar.gz ./pm2-portable.tar.gz
+
+      - name: Build Single Binaries (pkg)
+        run: |
+          npx pkg . --out-path ./binaries
+          # 重命名以便识别
+          mv binaries/pm2-linux binaries/pm2-linux-x64
+          mv binaries/pm2-macos binaries/pm2-macos-x64
+          mv binaries/pm2-win.exe binaries/pm2-win-x64.exe
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag_name }}
+          name: Release ${{ github.event.inputs.tag_name }}
+          draft: false
+          prerelease: false
+          files: |
+            pm2-portable.tar.gz
+            binaries/pm2-linux-x64
+            binaries/pm2-macos-x64
+            binaries/pm2-win-x64.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
