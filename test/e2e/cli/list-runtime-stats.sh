@@ -14,11 +14,11 @@ spec "should start failure fixture"
 sleep 2
 
 env -u PM2_SILENT $pm2 list > /tmp/tmp_out.txt
-header_line=$(grep -m1 "exit at" /tmp/tmp_out.txt)
-printf '%s\n' "$header_line" | grep -q "exit at"
+header_line=$(grep -m1 "lastExitTime" /tmp/tmp_out.txt)
+printf '%s\n' "$header_line" | grep -q "lastExitTime"
 spec "should display exit time column in list output"
 
-printf '%s\n' "$header_line" | grep -q "starts"
+printf '%s\n' "$header_line" | grep -q "totalRound"
 spec "should display starts column in list output"
 
 printf '%s\n' "$header_line" | grep -Eq '[│|][[:space:]]*ok[[:space:]]*[│|]'
