@@ -18,13 +18,12 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build binary with pkg
         run: |
-          npm install -g pkg
           mkdir -p ./dist
-          pkg . --targets node18-linux-x64 --output ./dist/pm2
+          npx pkg@5.8.1 . --targets node18-linux-x64 --output ./dist/pm2
 
       - name: Run smoke tests
         shell: bash
