@@ -41,6 +41,136 @@ Official website: [https://pm2.keymetrics.io/](https://pm2.keymetrics.io/)
 Works on Linux (stable) & macOS (stable) & Windows (stable). All Node.js versions are supported starting Node.js 12.X and Bun since v1
 
 
+## get-started
+
+
+```shell
+
+#-------- 安装 -----------
+
+从 发版下载 二进制
+https://github.com/weizhoublue/pm2/releases
+
+mv pm2-macos-x64  pm2
+chmod +x pm2
+sudo rm -f /usr/local/bin/pm2
+sudo mv pm2 /usr/local/bin/pm2
+
+
+# 如果以前运行过，会有后台进程，要杀掉，否则一直会以老的逻辑来运行
+pm2 kill
+
+# 每次提交任务后， 都会保存在  ~/.pm2/dump.pm2  ，以确保 重启后 能够加载这些数据  继续运行
+pm2 set pm2:autodump true
+
+# 每次主机重启，都自动运行后台 daemon，以确保我们的 cron 任务自动运行
+# 需要以 root 运行如下命令，注册系统的启动服务
+sudo pm2 startup
+# sudo pm2 unstartup 
+
+
+
+
+#---------------- 一次性运行任务 -------
+
+# 删除
+pm2 delete test
+
+# 运行一个一次性任务
+# 注意， 命令行参数一定要在整个命令的 最后， 否则 会把 其他 pm2 的参数 传递给脚本 
+# --no-autorestart  如果进程退出了，不会强制拉起他（不要求他一直在跑）
+export ENV_1=test
+pm2 start \
+   --name "test" \
+   --time \
+   --no-autorestart \
+   /tmp/test.sh -- "arg_1_test" "arg2 test" "arg 3 test"
+
+
+# 触发任务立即 再运行一次
+pm2 restart test
+
+# 获取任务列表
+pm2 list
+
+# 一直监控日志 ， 默认输出最近的 15 行
+# 如果用相同的 任务 name  反复创建相同的工作， 会看到 以前所有的 日志
+# 日志文件存在：
+#   - ~/.pm2/logs/<task_name>-out.log  
+#   - ~/.pm2/logs/<task_name>-error.log  
+pm2 log test
+pm2 log test  --lines 1000
+
+
+# 立刻出发运行一次
+pm2 restart test
+
+
+ 
+
+#------------------- cron 周期启动任务  ---------
+
+# 删除
+pm2 delete cron_test
+
+# 注意， 命令行参数一定要在整个命令的 最后， 否则 会把 其他 pm2 的参数 传递给脚本 
+export ENV_1=test1
+export ENV_2=test2
+pm2 start \
+    --name "cron_test"   \
+    --time \
+    --cron "*/1 * * * *" \
+    --no-autorestart \
+    /tmp/test.sh -- "arg_1_test" "arg2 test" "arg3 test"
+
+# 立刻触发 运行一次 来测试
+pm2 restart test
+
+
+# 每5分钟
+--cron "*/5 * * * *"
+
+# 每天凌晨3点
+--cron "0 3 * * *"
+
+# 每周一早上9点
+--cron "0 9 * * 1"
+
+# 每月1号凌晨0点
+--cron "0 0 1 * *"
+
+
+
+```
+
+
+
+```shell
+#----------- 测试脚本 ---------------
+cat <<'EOF' >/tmp/test.sh
+#!/bin/bash
+
+echo "$(date)=== 传入的参数 (共 $# 个) ==="
+
+if [ $# -eq 0 ]; then
+    echo "当前没有传入任何参数。"
+else
+    # $@ 代表所有的入参列表
+    count=1
+    for arg in "$@"; do
+        echo "参数 $count: $arg"
+        count=$((count + 1))
+    done
+fi
+
+echo ""
+echo "=== 带有 ENV_ 前缀的环境变量 ==="
+env | grep "^ENV_" || echo "未找到带有 ENV_ 前缀的环境变量。"
+EOF
+
+```
+
+
 ## Installing PM2
 
 ### With NPM
