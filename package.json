@@ -8,6 +8,7 @@
   "pkg": {
     "assets": [
       "lib/**/*",
+      "bin/**/*",
       "constants.js",
       "paths.js",
       "package.json",
