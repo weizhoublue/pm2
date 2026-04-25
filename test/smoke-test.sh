@@ -50,12 +50,17 @@ run_test() {
   local test_name="$1"
   local command="$2"
   
+  echo "-------------------------------"
   echo -n "Testing: $test_name ... "
   
   local output
   output=$(eval "$command" 2>&1)
   local exit_code=$?
-  
+  if [ -n "$output" ]; then
+    echo "  Output:"
+    echo "$output" | sed 's/^/    /'
+  fi
+
   if [ $exit_code -eq 0 ]; then
     echo "✓ PASS"
     ((TESTS_PASSED++))
@@ -64,10 +69,6 @@ run_test() {
     echo "✗ FAIL"
     echo "  Command: $command"
     echo "  Exit code: $exit_code"
-    if [ -n "$output" ]; then
-      echo "  Output:"
-      echo "$output" | sed 's/^/    /'
-    fi
     ((TESTS_FAILED++))
     return 1
   fi
