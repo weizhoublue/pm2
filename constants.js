@@ -107,7 +107,8 @@ var csts = {
   KILL_USE_MESSAGE        : process.env.PM2_KILL_USE_MESSAGE || false,
 
   PM2_PROGRAMMATIC        : typeof(process.env.pm_id) !== 'undefined' || process.env.PM2_PROGRAMMATIC,
-  PM2_LOG_DATE_FORMAT     : process.env.PM2_LOG_DATE_FORMAT !== undefined ? process.env.PM2_LOG_DATE_FORMAT : 'YYYY-MM-DDTHH:mm:ss'
+  PM2_LOG_DATE_FORMAT     : process.env.PM2_LOG_DATE_FORMAT !== undefined ? process.env.PM2_LOG_DATE_FORMAT : 'YYYY-MM-DDTHH:mm:ss',
+  LOG_DATE_RETAIN_DAYS    : parseInt(process.env.PM2_LOG_DATE_RETAIN_DAYS) || 30
 
 };
 

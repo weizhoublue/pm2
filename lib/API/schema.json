@@ -181,6 +181,18 @@
     "docDefault": false,
     "docDescription": "In cluster mode, merge each type of logs into a single file (instead of having one for each cluster)"
   },
+  "log_date_files": {
+    "type": "boolean",
+    "default": true,
+    "docDefault": true,
+    "docDescription": "Enable date-stamped log files where stdout and stderr are merged into a single daily file (<app>-<YYYYMMDD>.log)"
+  },
+  "log_date_retain_days": {
+    "type": "number",
+    "default": 30,
+    "docDefault": 30,
+    "docDescription": "Number of days to retain date-stamped log files before automatic cleanup"
+  },
   "vizion": {
     "type": "boolean",
     "default" : true,
