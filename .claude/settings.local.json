@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test *)",
+      "Bash(rtk git *)",
+      "Bash(git reset *)",
+      "Bash(git checkout *)",
+      "Bash(rtk grep *)"
+    ]
+  }
+}
