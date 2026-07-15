@@ -106,8 +106,16 @@ describe('Programmatic log feature test', function() {
 
   describe('Log timestamp', function() {
     it('prefixes PM2-managed log with configured timezone', function(done) {
+      function finish(err) {
+        pm2.unset('pm2:timezone', function(unsetErr) {
+          done(err || unsetErr);
+        });
+      }
+
       pm2.set('pm2:timezone', 'Asia/Shanghai', function(err) {
-        should.not.exists(err);
+        if (err)
+          return finish(err);
+
         pm2.start({
           script          : './echo.js',
           error_file      : 'timezone-error-echo.log',
@@ -115,7 +123,8 @@ describe('Programmatic log feature test', function() {
           name            : 'timezone-log',
           log_date_format : 'YYYY-MM-DD HH:mm Z'
         }, function(startErr, procs) {
-          should.not.exists(startErr);
+          if (startErr)
+            return finish(startErr);
 
           setTimeout(function() {
             var assertErr;
@@ -124,9 +133,7 @@ describe('Programmatic log feature test', function() {
             } catch (err) {
               assertErr = err;
             }
-            pm2.unset('pm2:timezone', function(unsetErr) {
-              done(assertErr || unsetErr);
-            });
+            finish(assertErr);
           }, 500);
         });
       });
