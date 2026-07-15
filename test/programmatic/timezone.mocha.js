@@ -2,6 +2,7 @@ var Timezone = require('../../lib/Timezone.js');
 var should = require('should');
 var pm2 = require('../..');
 var Configuration = require('../../lib/Configuration.js');
+var Worker = require('../../lib/Worker.js');
 
 describe('Timezone', function () {
   before(function (done) {
@@ -28,6 +29,39 @@ describe('Timezone', function () {
     Timezone.msUntilNextMidnight(new Date('2026-03-08T05:30:00.000Z'), 'America/New_York').should.eql(81000000);
   });
 
+  it('ignores a previous midnight rotation callback after rescheduling', function () {
+    var originalSetTimeout = global.setTimeout;
+    var originalClearTimeout = global.clearTimeout;
+    var timers = [];
+    var rotateCallbacks = [];
+    var God = {
+      rotateDateLogs: function (cb) {
+        rotateCallbacks.push(cb);
+      }
+    };
+
+    global.setTimeout = function (fn) {
+      var timer = { fn: fn, cleared: false };
+      timers.push(timer);
+      return timer;
+    };
+    global.clearTimeout = function (timer) {
+      timer.cleared = true;
+    };
+
+    try {
+      Worker(God);
+      God.Worker.scheduleMidnightRotation();
+      timers[0].fn();
+      God.Worker.scheduleMidnightRotation();
+      rotateCallbacks[0]();
+      timers.filter(function (timer) { return !timer.cleared; }).length.should.eql(1);
+    } finally {
+      global.setTimeout = originalSetTimeout;
+      global.clearTimeout = originalClearTimeout;
+    }
+  });
+
   it('does not persist invalid global timezone', function (done) {
     pm2.set('pm2:timezone', 'UTC+8', function (err) {
       should.exists(err);
@@ -39,22 +73,33 @@ describe('Timezone', function () {
   it('rebuilds cron jobs after timezone update', function (done) {
     pm2.start({ script: 'test/fixtures/cron.js', name: 'timezone-cron', cron_restart: '* * * * * *' }, function (err) {
       should.not.exists(err);
+      var executeRemote = pm2.Client.executeRemote;
+      var refreshResult;
+      pm2.Client.executeRemote = function (method, data, cb) {
+        return executeRemote.call(this, method, data, function (refreshErr, result) {
+          if (method === 'refreshTimezone')
+            refreshResult = result;
+          return cb(refreshErr, result);
+        });
+      };
       pm2.set('pm2:timezone', 'Asia/Shanghai', function (setErr) {
+        pm2.Client.executeRemote = executeRemote;
         should.not.exists(setErr);
-        pm2.Client.executeRemote('refreshTimezone', {}, function (refreshErr, result) {
-          should.not.exists(refreshErr);
-          result.timezone.should.eql('Asia/Shanghai');
-          result.cronJobs.should.eql(1);
-          pm2.delete('timezone-cron', function (deleteErr) {
-            should.not.exists(deleteErr);
-            pm2.unset('pm2:timezone', done);
-          });
+        refreshResult.timezone.should.eql('Asia/Shanghai');
+        refreshResult.cronJobs.should.eql(1);
+        pm2.delete('timezone-cron', function (deleteErr) {
+          should.not.exists(deleteErr);
+          done();
         });
       });
     });
   });
 
   after(function (done) {
-    Configuration.unset('pm2:timezone', done);
+    pm2.unset('pm2:timezone', function (err) {
+      pm2.disconnect(function () {
+        done(err);
+      });
+    });
   });
 });
