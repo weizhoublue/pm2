@@ -25,6 +25,11 @@ describe('Timezone', function () {
     Timezone.dateKey(new Date('2026-01-01T16:00:00.000Z'), 'Asia/Shanghai').should.eql('20260102');
   });
 
+  it('formats absolute CLI timestamp in configured timezone', function () {
+    Timezone.format(new Date('2026-01-02T00:00:00.000Z'), 'YYYY-MM-DDTHH:mm:ssZ', 'America/Los_Angeles')
+      .should.eql('2026-01-01T16:00:00-08:00');
+  });
+
   it('uses target timezone when date key crosses local day boundary', function () {
     Timezone.dateKey(new Date('2026-01-01T23:30:00.000Z'), 'Pacific/Auckland').should.eql('20260102');
   });

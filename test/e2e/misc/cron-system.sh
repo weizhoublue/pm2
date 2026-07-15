@@ -40,6 +40,16 @@ should 'should app not be started again' 'online' 0
 $pm2 delete all
 
 #
+# Cron with configured timezone
+#
+$pm2 set pm2:timezone Asia/Shanghai
+$pm2 start cron.js --name cron-timezone -c "*/2 * * * * *" --no-vizion
+sleep 6
+should 'configured timezone cron restarts process' 'restart_time: 0' 0
+$pm2 unset pm2:timezone
+$pm2 delete cron-timezone
+
+#
 # Cron restart in cluster mode
 #
 $pm2 start cron.js -i 1 -c "*/2 * * * * *"

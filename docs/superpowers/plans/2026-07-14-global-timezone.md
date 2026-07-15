@@ -237,6 +237,7 @@ Expected: PASS; +08:00 appears in new PM2 log output and live containers update 
 - Modify: lib/API/UX/pm2-describe.js:40-48
 - Modify: lib/API/UX/pm2-ls.js:28-45
 - Modify: README.md:60-70,111-140
+- Create: docs/timezone.md
 - Modify: test/e2e/misc/cron-system.sh
 - Test: test/programmatic/timezone.mocha.js
 
@@ -273,7 +274,7 @@ Replace CLI-added dayjs().format(timestamp) in Log.stream, Log.devStream, and Lo
     pm2 set pm2:timezone Asia/Shanghai
     pm2 unset pm2:timezone
 
-Document IANA input, cron/PM2 timestamp scope, host-local fallback, and no application timezone interference.
+Document IANA input, cron/PM2 timestamp scope, host-local fallback, and no application timezone interference. Create docs/timezone.md as the canonical usage guide and link to it from README.md. The guide must list the set/unset commands, immediate cron refresh behavior, every affected PM2 time surface, and the explicitly unaffected application/log-history/duration behaviors.
 
 - [ ] **Step 4: Verify GREEN**
 
