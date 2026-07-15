@@ -95,6 +95,25 @@ describe('Timezone', function () {
     });
   });
 
+  it('refreshes cron jobs after timezone unset', function (done) {
+    var executeRemote = pm2.Client.executeRemote;
+    var refreshResult;
+    pm2.Client.executeRemote = function (method, data, cb) {
+      return executeRemote.call(this, method, data, function (refreshErr, result) {
+        if (method === 'refreshTimezone')
+          refreshResult = result;
+        return cb(refreshErr, result);
+      });
+    };
+    pm2.unset('pm2:timezone', function (err) {
+      pm2.Client.executeRemote = executeRemote;
+      should.not.exists(err);
+      should.not.exists(refreshResult.timezone);
+      refreshResult.cronJobs.should.eql(0);
+      done();
+    });
+  });
+
   after(function (done) {
     pm2.unset('pm2:timezone', function (err) {
       pm2.disconnect(function () {
