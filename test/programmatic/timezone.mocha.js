@@ -3,6 +3,7 @@ var should = require('should');
 var pm2 = require('../..');
 var Configuration = require('../../lib/Configuration.js');
 var Worker = require('../../lib/Worker.js');
+var fs = require('fs');
 
 describe('Timezone', function () {
   before(function (done) {
@@ -22,6 +23,10 @@ describe('Timezone', function () {
     Timezone.format(new Date('2026-01-02T00:00:00.000Z'), 'YYYY-MM-DD HH:mm Z', 'Asia/Shanghai')
       .should.eql('2026-01-02 08:00 +08:00');
     Timezone.dateKey(new Date('2026-01-01T16:00:00.000Z'), 'Asia/Shanghai').should.eql('20260102');
+  });
+
+  it('uses target timezone when date key crosses local day boundary', function () {
+    Timezone.dateKey(new Date('2026-01-01T23:30:00.000Z'), 'Pacific/Auckland').should.eql('20260102');
   });
 
   it('calculates next midnight in target timezone across DST', function () {
@@ -91,6 +96,37 @@ describe('Timezone', function () {
           should.not.exists(deleteErr);
           done();
         });
+      });
+    });
+  });
+
+  it('updates timestamps in a live container without restarting it', function (done) {
+    var outFile = '/tmp/pm2-timezone-live-' + process.pid + '.log';
+    try { fs.unlinkSync(outFile); } catch (err) {}
+
+    pm2.start({
+      script: 'test/fixtures/echo.js',
+      name: 'timezone-live-log',
+      out_file: outFile,
+      error_file: '/dev/null',
+      log_date_format: 'YYYY-MM-DD HH:mm Z'
+    }, function (startErr, procs) {
+      should.not.exists(startErr);
+      var pid = procs[0].pid;
+
+      pm2.set('pm2:timezone', 'Asia/Shanghai', function (setErr) {
+        should.not.exists(setErr);
+        setTimeout(function () {
+          pm2.describe('timezone-live-log', function (describeErr, described) {
+            should.not.exists(describeErr);
+            described[0].pid.should.eql(pid);
+            fs.readFileSync(outFile).toString().should.match(/ \+08:00: /);
+            pm2.delete('timezone-live-log', function (deleteErr) {
+              should.not.exists(deleteErr);
+              pm2.unset('pm2:timezone', done);
+            });
+          });
+        }, 500);
       });
     });
   });
