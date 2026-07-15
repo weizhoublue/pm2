@@ -40,6 +40,17 @@ Official website: [https://pm2.keymetrics.io/](https://pm2.keymetrics.io/)
 
 Works on Linux (stable) & macOS (stable) & Windows (stable). All Node.js versions are supported starting Node.js 12.X and Bun since v1
 
+## Global timezone
+
+Set one IANA timezone for PM2 cron scheduling and PM2-formatted timestamps:
+
+```bash
+pm2 set pm2:timezone Asia/Shanghai
+pm2 unset pm2:timezone
+```
+
+See [Global timezone](docs/timezone.md) for validation, scope, immediate cron refresh behavior, and host-local fallback.
+
 
 ## get-started
 

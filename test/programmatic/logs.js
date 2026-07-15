@@ -105,6 +105,40 @@ describe('Programmatic log feature test', function() {
   });
 
   describe('Log timestamp', function() {
+    it('prefixes PM2-managed log with configured timezone', function(done) {
+      function finish(err) {
+        pm2.unset('pm2:timezone', function(unsetErr) {
+          done(err || unsetErr);
+        });
+      }
+
+      pm2.set('pm2:timezone', 'Asia/Shanghai', function(err) {
+        if (err)
+          return finish(err);
+
+        pm2.start({
+          script          : './echo.js',
+          error_file      : 'timezone-error-echo.log',
+          out_file        : 'timezone-out-echo.log',
+          name            : 'timezone-log',
+          log_date_format : 'YYYY-MM-DD HH:mm Z'
+        }, function(startErr, procs) {
+          if (startErr)
+            return finish(startErr);
+
+          setTimeout(function() {
+            var assertErr;
+            try {
+              fs.readFileSync(procs[0].pm2_env.pm_out_log_path).toString().should.match(/ \+08:00: /);
+            } catch (err) {
+              assertErr = err;
+            }
+            finish(assertErr);
+          }, 500);
+        });
+      });
+    });
+
     it('should every file be timestamped', function(done) {
       pm2.start({
         script          : './echo.js',
