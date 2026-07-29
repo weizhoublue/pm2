@@ -56,6 +56,19 @@ describe('Startup binary path resolution', function() {
     should(Startup.getStartupTemplate('launchd')).match(/<key>LaunchOnlyOnce<\/key>/);
   });
 
+  it('should require an explicit user and home for root launchd startup', function() {
+    should(Startup.requiresLaunchdUser(0, 'launchd')).be.true();
+    should(Startup.requiresLaunchdUser(0, 'launchd', 'weizhoublue')).be.true();
+  });
+
+  it('should not require an explicit user for non-launchd startup', function() {
+    should(Startup.requiresLaunchdUser(0, 'systemd')).be.false();
+  });
+
+  it('should allow root launchd startup with an explicit user and home', function() {
+    should(Startup.requiresLaunchdUser(0, 'launchd', 'weizhoublue', '/Users/weizhoublue')).be.false();
+  });
+
   it('should ignore the programmatic caller path', function() {
     delete process.pkg;
     require.main.filename = '/workdir/app.js';
