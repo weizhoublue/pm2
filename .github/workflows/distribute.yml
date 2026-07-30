@@ -1,6 +1,9 @@
-name: Distribute PM2 Binaries
+name: Welan Distribute Binaries
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       tag_name:
@@ -10,6 +13,9 @@ on:
 
 permissions:
   contents: write
+
+env:
+  RELEASE_TAG: ${{ github.event_name == 'push' && github.ref_name || github.event.inputs.tag_name }}
 
 jobs:
   build:
@@ -47,8 +53,8 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.inputs.tag_name }}
-          name: Release ${{ github.event.inputs.tag_name }}
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Release ${{ env.RELEASE_TAG }}
           draft: false
           prerelease: false
           files: |
